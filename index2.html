@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Formulario de Reunión Jitsi</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.all.min.js"></script>
+    <style>
+        .container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #mensajeTarjeta,
+        #enlaceTarjeta,
+        #recargarTarjeta {
+            text-align: left;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="text-center">
+            <h2 class="mt-3">Formulario de Reunión Jitsi</h2>
+            <form id="formulario">
+
+                <div class="form-group">
+                    <label for="tematica">Tema:</label>
+                    <input type="text" class="form-control" id="tematica" name="tematica" required>
+                    <div class="invalid-feedback">El tema es obligatorio.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha">Fecha:</label>
+                    <input type="text" class="form-control" id="fecha" name="fecha">
+                </div>
+
+                <div class="form-group">
+                    <label for="hora">Hora:</label>
+                    <input type="text" class="form-control" id="hora" name="hora">
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="generarMensaje()">Generar Mensaje</button>
+            </form>
+
+            <div id="mensajeTarjeta" class="mt-3" style="display: none;"></div>
+            <div id="enlaceTarjeta" class="mt-3" style="display: none;"></div>
+            <div id="recargarTarjeta" class="mt-3" style="display: none;"></div>
+
+
+            <script>
+                flatpickr("#hora", { enableTime: true, noCalendar: true, dateFormat: "h:i K", time_24hr: false, locale: "es" });
+                flatpickr("#fecha", { dateFormat: "l, j F Y", locale: "es" });
+
+                function generarNumero() { var opciones = "abcdefghijklmnopqrstuvwxyz0123456789"; var numero = ""; for (var i = 0; i < 5; i++) { var indice = Math.floor(Math.random() * opciones.length); numero += opciones.charAt(indice); } return numero; }
+
+                function generarMensaje() {
+                    var tematicaInput = document.getElementById("tematica");
+                    if (tematicaInput.checkValidity()) {
+                        var numeroAleatorio = generarNumero();
+                        var tematica = tematicaInput.value;
+                        var hora = document.getElementById("hora").value;
+                        var fecha = document.getElementById("fecha").value;
+                        var formulario = document.getElementById("formulario");
+                        var mensajeTarjeta = document.getElementById("mensajeTarjeta");
+                        var enlaceTarjeta = document.getElementById("enlaceTarjeta");
+                        var recargarTarjeta = document.getElementById("recargarTarjeta");
+                        var temaPalabras = tematica.split(" ");
+                        var tematicaSinEspacios = "";
+
+                        for (var i = 0; i < temaPalabras.length; i++) {
+                            var palabra = temaPalabras[i];
+                            tematicaSinEspacios += palabra.charAt(0).toUpperCase() + palabra.slice(1);
+                        }
+
+                        var mensaje = "Está invitado(a) a una reunión en Jitsi Meet.\n\n";
+                        mensaje += "Tema: " + tematica + "\n";
+                        mensaje += "Hora: " + fecha + ", " + hora + "\n\n";
+                        mensaje += "Unirse a la reunión Jitsi:\n";
+                        mensaje += "https://meet.jit.si/UDN" + numeroAleatorio + "/" + tematicaSinEspacios;
+
+                        mensajeTarjeta.innerHTML = "<pre>" + mensaje + "</pre>";
+                        mensajeTarjeta.style.display = "block";
+                        var copiarMensajeBtn = document.createElement("button");
+                        copiarMensajeBtn.className = "btn btn-primary";
+                        copiarMensajeBtn.innerText = "Copiar Mensaje";
+                        copiarMensajeBtn.onclick = function (event) {
+                            copiarTexto(mensaje);
+                            event.preventDefault();
+                        };
+                        mensajeTarjeta.appendChild(copiarMensajeBtn);
+                        enlaceTarjeta.innerHTML = "<pre>" + "https://meet.jit.si/UDN" +
+                        numeroAleatorio + "/" + tematicaSinEspacios + "</pre>";
+                       
+                        enlaceTarjeta.style.display = "block"; var copiarEnlaceBtn = document.createElement("button");
+                        copiarEnlaceBtn.className = "btn btn-primary";
+                        copiarEnlaceBtn.innerText = "Copiar Enlace";
+                        copiarEnlaceBtn.onclick = function (event) {
+                            copiarTexto("https://meet.jit.si/UDN" + numeroAleatorio + "/" + tematicaSinEspacios);
+                            event.preventDefault();
+                        }; enlaceTarjeta.appendChild(copiarEnlaceBtn);
+                        recargarTarjeta.innerHTML = "<button type='button' class='btn btn-primary' onclick='recargarPagina()'>Generar otro enlace</button>";
+                        recargarTarjeta.style.display = "block"; formulario.style.display = "none";
+                    } else { tematicaInput.classList.add("is-invalid"); }
+                } function copiarTexto(texto) {
+                    texto = texto.replace(/<br>/g, "\n");
+                    var elementoTemporal = document.createElement("textarea"); elementoTemporal.value = texto;
+                    document.body.appendChild(elementoTemporal); elementoTemporal.select();
+                    document.execCommand("copy"); document.body.removeChild(elementoTemporal);
+                    Swal.fire({ title: "¡Texto copiado!", text: "El texto se ha copiado correctamente al portapapeles.", icon: "success", timer: 2000, timerProgressBar: true, toast: true, position: "center", showConfirmButton: false });
+                } function recargarPagina() { location.reload(); }</script>
+        </div>
+    </div>
+</body>
+
+</html>
